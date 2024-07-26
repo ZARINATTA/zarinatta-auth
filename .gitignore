@@ -7,6 +7,9 @@ build/
 
 application.properties
 
+### key file
+push-notification-with-p-5c2ef-firebase-adminsdk-fe8i2-536a932cc1.json
+
 ### STS ###
 .apt_generated
 .classpath
