@@ -30,8 +30,17 @@ public class AuthController {
                 .maxAge(loginDto.getExpires_in())
                 .build();
 
-        return ResponseEntity.status(HttpStatus.OK).header("Set-Cookie", accessTokenCookie.toString()).body(TokenDto.builder().refreshToken(loginDto.getRefresh_token()).refreshTokenTime(loginDto.getRefresh_token_expires_in()).build());
+        TokenDto tokenDto = TokenDto.builder()
+                .refreshToken(loginDto.getRefresh_token())
+                .refreshTokenTime(loginDto.getRefresh_token_expires_in())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .header("Set-Cookie", accessTokenCookie.toString())
+                .body(tokenDto);
     }
+
+
 
     @GetMapping("/test")
     public ResponseEntity<TestDto> test() {
