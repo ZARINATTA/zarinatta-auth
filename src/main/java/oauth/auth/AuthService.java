@@ -1,28 +1,28 @@
 package oauth.auth;
 
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.java.Log;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientRequestException;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
 @Service
+@RequiredArgsConstructor
 public class AuthService {
+    @Value("${KAKAO_CLIENT_ID}")
+    private String CLIENT_ID;
+
+    @Value("${KAKAO_REDIRECT_URI}")
+    private String REDIRECT_URI;
 
     public RedirectDto authorize() {
-        String requestUri = "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id="+client_id+"&redirect_uri="+redirect_uri;
+        String requestUri = "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=" + CLIENT_ID + "&redirect_uri=" + REDIRECT_URI;
 
         WebClient webClient = WebClient.create();
 
@@ -39,9 +39,9 @@ public class AuthService {
 
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "authorization_code");
-        formData.add("client_id", client_id);
+        formData.add("client_id", CLIENT_ID);
         formData.add("code", code);
-        formData.add("redirect_uri", redirect_uri);
+        formData.add("redirect_uri", REDIRECT_URI);
 
         WebClient webClient = WebClient.create();
 

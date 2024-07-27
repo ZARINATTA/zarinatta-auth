@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.GoogleCredentials;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.*;
 import org.springframework.http.converter.StringHttpMessageConverter;
@@ -19,6 +20,13 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class NotiService {
+
+    @Value("${FIREBASE_PATH}")
+    private String FIREBASE_PATH;
+
+    @Value("${FIREBASE_API_URL}")
+    private String API_URL;
+
     public int sendMessageTo(FcmSendDto fcmSendDto) throws IOException {
         String message = makeMessage(fcmSendDto);
 
@@ -26,7 +34,7 @@ public class NotiService {
         restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer "+getAccessToken());
+        headers.set("Authorization", "Bearer " + getAccessToken());
         headers.set(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8");
 
         HttpEntity entity = new HttpEntity<>(message, headers);
@@ -56,7 +64,7 @@ public class NotiService {
                                 .body(fcmSendDto.getBody())
                                 .image(null)
                                 .build()
-                ).build()).validateOnly(false).build();
+                        ).build()).validateOnly(false).build();
 
         return om.writeValueAsString(fcmMessageDto);
     }
