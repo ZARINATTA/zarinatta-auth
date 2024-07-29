@@ -13,7 +13,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowCredentials(true)
                 .allowedMethods("*")
-                .allowedOrigins("https://sktoauth.netlify.app")
+                .allowedOrigins("http://localhost:3000/login")
                 .allowedHeaders("*");
     }
 }
