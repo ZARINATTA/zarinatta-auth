@@ -21,9 +21,9 @@ public class UserController {
         return ResponseEntity.ok(Map.of("userId", userId));
     }
 
-    @PostMapping("/users/email")
-    public ResponseEntity<Void> savePhoneNumber(String userId, String userPhone) {
-        userService.updateUserPhone(userId, userPhone);
+    @PostMapping("/users/update")
+    public ResponseEntity<Void> savePhoneNumber(String userId, UserUpdateDto userUpdateDto) {
+        userService.update(userId, userUpdateDto);
 
         return new ResponseEntity<Void>(HttpStatus.CREATED);
     }
