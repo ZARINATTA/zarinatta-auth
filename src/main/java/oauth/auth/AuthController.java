@@ -7,6 +7,7 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,25 +20,20 @@ public class AuthController {
     }
 
     @GetMapping("/oauth/login")
-    public ResponseEntity<TokenDto> login(@RequestParam String code, HttpServletResponse response) {
-        LoginDto loginDto = authService.login(code);
+    public ResponseEntity<Map<String, String>> login(@RequestParam String code) throws Exception {
+        TokenResponseDto tokenResponseDto = authService.login(code);
 
-        ResponseCookie accessTokenCookie = ResponseCookie.from("skt", loginDto.getAccess_token())
+        ResponseCookie accessTokenCookie = ResponseCookie.from("skt", tokenResponseDto.getAccessToken())
                 .path("/")
                 .sameSite("None")
                 .httpOnly(false)
                 .secure(true)
-                .maxAge(loginDto.getExpires_in())
-                .build();
-
-        TokenDto tokenDto = TokenDto.builder()
-                .refreshToken(loginDto.getRefresh_token())
-                .refreshTokenTime(loginDto.getRefresh_token_expires_in())
+                .maxAge(30 * 60 * 1000L)
                 .build();
 
         return ResponseEntity.status(HttpStatus.OK)
                 .header("Set-Cookie", accessTokenCookie.toString())
-                .body(tokenDto);
+                .body(Map.of("refreshToken", tokenResponseDto.getRefreshToken()));
     }
 
 

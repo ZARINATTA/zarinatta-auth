@@ -1,9 +1,12 @@
 package oauth.auth;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import oauth.config.RedisService;
 import oauth.user.UserInputDto;
 import oauth.user.UserService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -13,6 +16,9 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -26,9 +32,13 @@ public class AuthService {
     @Value("${KAKAO_JWT_NOUNCE}")
     private String nounce;
 
+    private final static long REFRESH_TIME = 7 * 24 * 60 * 60 * 1000L; //7일
+
     private UserService userService;
 
     private JwtService jwtService;
+
+    private RedisService redisService;
 
     public RedirectDto authorize() {
         String requestUri = "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=" + CLIENT_ID + "&redirect_uri=" + REDIRECT_URI+"&nounce="+nounce;
@@ -43,7 +53,8 @@ public class AuthService {
         return RedirectDto.builder().redirectUri(response).build();
     }
 
-    public LoginDto login(String code) throws Exception {
+    @Transactional
+    public TokenResponseDto login(String code) throws Exception {
         String requestUri = "https://kauth.kakao.com/oauth/token";
 
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
@@ -62,14 +73,23 @@ public class AuthService {
                 .bodyToMono(LoginDto.class)
                 .block();
 
-        JwtToken jwtToken = jwtService.decodeToken(loginDto.getIdToken());
+        JwtToken jwtToken = jwtService.decodeKakaoToken(loginDto.getIdToken());
 
-        userService.save(UserInputDto.builder()
-                .userEmail(jwtToken.getEmail())
-                .userNick(jwtToken.getNickname())
-                .build());
+        String userId = userService.findUserIdByEmail(jwtToken.getEmail());
 
-        return loginDto;
+        if(userId.isEmpty()) {
+            userId = userService.save(UserInputDto.builder()
+                    .userEmail(jwtToken.getEmail())
+                    .userNick(jwtToken.getNickname())
+                    .build());
+        }
+
+        String accessToken = jwtService.createAccessToken(userId);
+        String refreshToken = jwtService.createRefreshToken();
+
+        redisService.setValue(userId, loginDto.getRefresh_token(), REFRESH_TIME);
+
+        return TokenResponseDto.builder().accessToken(accessToken).refreshToken(refreshToken).build();
     }
 
     private static Mono<String> handleResponse(ClientResponse response) {
