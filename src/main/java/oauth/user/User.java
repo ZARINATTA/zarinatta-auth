@@ -30,5 +30,6 @@ public class User {
     private String userPhoneNumber;
 
     @Column(name="USER_DEVICE_TOKEN")
+    @Nullable
     private String userDeviceToken;
 }
