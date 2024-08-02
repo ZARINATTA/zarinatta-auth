@@ -29,8 +29,8 @@ public class AuthService {
     @Value("${KAKAO_REDIRECT_URI}")
     private String REDIRECT_URI;
 
-    @Value("${KAKAO_JWT_NOUNCE}")
-    private String nounce;
+    @Value("${KAKAO_JWT_NONCE}")
+    private String nonce;
 
     private final static long REFRESH_TIME = 7 * 24 * 60 * 60 * 1000L; //7일
 
@@ -41,7 +41,7 @@ public class AuthService {
     private RedisService redisService;
 
     public RedirectDto authorize() {
-        String requestUri = "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=" + CLIENT_ID + "&redirect_uri=" + REDIRECT_URI+"&nounce="+nounce;
+        String requestUri = "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=" + CLIENT_ID + "&redirect_uri=" + REDIRECT_URI+"&nonce="+nonce;
 
         WebClient webClient = WebClient.create();
 
@@ -73,7 +73,15 @@ public class AuthService {
                 .bodyToMono(LoginDto.class)
                 .block();
 
+        System.out.println("ㅐㅐㅐㅐ");
+        System.out.println(loginDto);
+        System.out.println("ㅐㅐㅐㅐ");
+
         JwtToken jwtToken = jwtService.decodeKakaoToken(loginDto.getIdToken());
+
+        System.out.println("ㅐㅐㅐㅐ");
+        System.out.println(jwtToken);
+        System.out.println("ㅐㅐㅐㅐ");
 
         String userId = userService.findUserIdByEmail(jwtToken.getEmail());
 
