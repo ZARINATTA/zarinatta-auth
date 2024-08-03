@@ -2,8 +2,8 @@ name: Server CD
 
 on:
   push:
-    paths:
-      - 'src/main/java/**'
+#    paths:
+#      - 'src/main/java/**'
     branches:
       - main
 
@@ -26,6 +26,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Add application.properties
         run: |
+          mkdir -p ./src/main/resources
           touch /src/main/resources/application.properties
           echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.properties
           cat ./src/main/resources/application.properties
