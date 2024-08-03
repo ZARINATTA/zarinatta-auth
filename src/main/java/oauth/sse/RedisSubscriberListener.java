@@ -23,8 +23,6 @@ public class RedisSubscriberListener implements MessageListener {
 
             MessageDto messageDto = objectMapper.readValue(publicMessage, MessageDto.class);
 
-            // TODO: 알림 보내기......
-
             log.info("Redis Subscribe Message : "+publicMessage);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
