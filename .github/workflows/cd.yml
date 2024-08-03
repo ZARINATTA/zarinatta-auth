@@ -23,8 +23,8 @@ jobs:
         run: |
           chmod +x ./gradlew
 
+      - uses: actions/checkout@v4
       - name: Add application.properties
-        uses: actions/checkout@v4
         run: |
           touch /src/main/resources/application.properties
           echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.properties
