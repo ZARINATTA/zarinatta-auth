@@ -56,7 +56,7 @@ jobs:
         run: |
           pwd
           sudo chmod 666 /var/run/docker.sock
-          docker buildx build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }} -f ./Dockerfile .
+          docker buildx build --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }} -f ./Dockerfile .
 
       - name: Login docker hub
         uses: docker/login-action@v2
@@ -67,20 +67,17 @@ jobs:
       - name: Publish to docker hub
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}
 
-      - name: Check for running containers
-        id: check_containers
-        run: echo "::set-output name=containers::$(docker ps -a -q)"
-
       - name: Connect to WAS & Execute Application
         uses: appleboy/ssh-action@v0.1.6
-        if: steps.check_containers.outputs.containers != ''
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_KEY }}
           port: ${{ secrets.SERVER_PORT }}
           script: |
-            docker stop $(docker ps -a -q) 
-            docker rm $(docker ps -a -q) 
+            if [ ! -z "$(docker ps -q)" ]; then
+              docker stop $(docker ps -q)
+              docker rm $(docker ps -q)
+            fi
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}
             docker run -d -p 8080:8080 --name ${{ secrets.DOCKERHUB_IMAGE_NAME }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}
