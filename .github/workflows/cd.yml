@@ -67,8 +67,13 @@ jobs:
       - name: Publish to docker hub
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}
 
+      - name: Check for running containers
+        id: check_containers
+        run: echo "::set-output name=containers::$(docker ps -a -q)"
+
       - name: Connect to WAS & Execute Application
         uses: appleboy/ssh-action@v0.1.6
+        if: steps.check_containers.outputs.containers != ''
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
