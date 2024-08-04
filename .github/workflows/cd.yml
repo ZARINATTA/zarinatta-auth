@@ -87,13 +87,10 @@ jobs:
           key: ${{ secrets.SERVER_KEY }}
           port: ${{ secrets.SERVER_PORT }}
           script: |
-#            if [ ! -z "$(docker ps -q)" ]; then
-#              echo "in here~!"
-#              docker stop $(docker ps -q)
-#              docker rm $(docker ps -q)
-#            fi
             echo "pull docker image"
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}
             echo "run docker image"
             docker run -d -p 8080:8080 --name ${{ secrets.DOCKERHUB_IMAGE_NAME }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}
             echo "finish ~!"
+            
+            
