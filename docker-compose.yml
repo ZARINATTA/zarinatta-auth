@@ -6,7 +6,7 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: "${{ secrets.MYSQL_ROOT_PASSWORD }}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
       MYSQL_DATABASE: imsi
 
   redis:
@@ -15,7 +15,7 @@ services:
       - "6379:6379"
 
   app:
-    image: "${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}"
+    image: "${DOCKERHUB_USERNAME}/${DOCKERHUB_IMAGE_NAME}"
     ports:
       - "8080:8080"
     depends_on:
