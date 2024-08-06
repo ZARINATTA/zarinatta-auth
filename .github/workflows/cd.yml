@@ -2,28 +2,12 @@ name: Server CD
 
 on:
   push:
-    #    paths:
-    #      - 'src/main/java/**'
     branches:
       - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    services:
-      mysql:
-        image: mysql:5.7
-        ports:
-          - 3306:3306
-        env:
-          MYSQL_ROOT_PASSWORD: "${{ secrets.MYSQL_ROOT_PASSWORD }}"
-          MYSQL_DATABASE: imsi
-
-      redis:
-        image: redis:latest
-        ports:
-          - 6379:6379
 
     steps:
       - uses: actions/checkout@v4
@@ -54,6 +38,7 @@ jobs:
           touch ./src/main/resources/application.properties
           echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.properties
           cat ./src/main/resources/application.properties
+          
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
@@ -64,20 +49,25 @@ jobs:
 
       - name: Build docker image
         run: |
-          pwd
           sudo chmod 666 /var/run/docker.sock
           docker buildx build --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }} -f ./Dockerfile .
 
-      - name: Login docker hub
+      - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Publish to docker hub
+      - name: Publish to Docker Hub
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}
           docker images
+
+      - name: Deploy with Docker Compose
+        run: |
+          sudo chmod 666 /var/run/docker.sock
+          docker-compose down
+          docker-compose up -d
 
       - name: Connect to WAS & Execute Application
         uses: appleboy/ssh-action@v0.1.6
@@ -88,16 +78,5 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           script: |
             sudo chmod 666 /var/run/docker.sock
-            timeout 300 docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}
-            docker stop $(docker ps -a -q) 
-            docker rm $(docker ps -a -q) 
-            if [ $? -ne 0 ]; then
-              echo "Docker pull command timed out or failed"
-              exit 1
-            fi
-            echo "run docker image"
-            timeout 300 docker run -d -p 8080:8080 --name ${{ secrets.DOCKERHUB_IMAGE_NAME }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}
-            if [ $? -ne 0 ]; then
-              echo "Docker run command timed out or failed"
-              exit 1
-            fi
+            docker-compose down
+            docker-compose up -d
