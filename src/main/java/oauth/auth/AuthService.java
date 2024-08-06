@@ -73,15 +73,7 @@ public class AuthService {
                 .bodyToMono(LoginDto.class)
                 .block();
 
-        System.out.println("ㅐㅐㅐㅐ");
-        System.out.println(loginDto);
-        System.out.println("ㅐㅐㅐㅐ");
-
         JwtToken jwtToken = jwtService.decodeKakaoToken(loginDto.getIdToken());
-
-        System.out.println("ㅐㅐㅐㅐ");
-        System.out.println(jwtToken);
-        System.out.println("ㅐㅐㅐㅐ");
 
         String userId = userService.findUserIdByEmail(jwtToken.getEmail());
 
