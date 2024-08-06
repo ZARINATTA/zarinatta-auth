@@ -87,10 +87,14 @@ jobs:
           key: ${{ secrets.SERVER_KEY }}
           port: ${{ secrets.SERVER_PORT }}
           script: |
-            echo "pull docker image"
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}
+            timeout 300 docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}
+            if [ $? -ne 0 ]; then
+              echo "Docker pull command timed out or failed"
+              exit 1
+            fi
             echo "run docker image"
-            docker run -d -p 8080:8080 --name ${{ secrets.DOCKERHUB_IMAGE_NAME }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}
-            echo "finish ~!"
-            
-            
+            timeout 300 docker run -d -p 8080:8080 --name ${{ secrets.DOCKERHUB_IMAGE_NAME }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}
+            if [ $? -ne 0 ]; then
+              echo "Docker run command timed out or failed"
+              exit 1
+            fi
