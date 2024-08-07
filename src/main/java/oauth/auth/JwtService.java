@@ -48,22 +48,6 @@ public class JwtService {
                 .compact();
     }
 
-    public JwtToken decodeKakaoToken(String idToken) throws Exception {
-        Claims claims = Jwts.parserBuilder()
-                .build()
-                .parseClaimsJwt(idToken)
-                .getBody();
-
-        if (!claims.containsKey("email") && !claims.containsKey("nickname")) {
-            throw new Exception("Invalid Token");
-        }
-
-        return JwtToken.builder()
-                .email((String) claims.get("email"))
-                .nickname((String) claims.get("nickname"))
-                .build();
-    }
-
     public boolean isValidToken(String token) throws Exception {
         try {
             Jwts.parserBuilder().build().parseClaimsJws(token);

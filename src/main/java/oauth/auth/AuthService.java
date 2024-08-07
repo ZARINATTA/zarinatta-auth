@@ -6,7 +6,6 @@ import oauth.config.RedisService;
 import oauth.user.UserInputDto;
 import oauth.user.UserService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -18,7 +17,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,14 +32,14 @@ public class AuthService {
 
     private final static long REFRESH_TIME = 7 * 24 * 60 * 60 * 1000L; //7일
 
-    private UserService userService;
+    private final UserService userService;
 
-    private JwtService jwtService;
+    private final JwtService jwtService;
 
-    private RedisService redisService;
+    private final RedisService redisService;
 
     public RedirectDto authorize() {
-        String requestUri = "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=" + CLIENT_ID + "&redirect_uri=" + REDIRECT_URI+"&nonce="+nonce;
+        String requestUri = "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=" + CLIENT_ID + "&redirect_uri=" + REDIRECT_URI + "&nonce=" + nonce;
 
         WebClient webClient = WebClient.create();
 
@@ -55,7 +53,7 @@ public class AuthService {
 
     @Transactional
     public TokenResponseDto login(String code) throws Exception {
-        String requestUri = "https://kauth.kakao.com/oauth/token";
+        String getTokenUri = "https://kauth.kakao.com/oauth/token";
 
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "authorization_code");
@@ -66,28 +64,47 @@ public class AuthService {
         WebClient webClient = WebClient.create();
 
         LoginDto loginDto = webClient.post()
-                .uri(requestUri)
+                .uri(getTokenUri)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(BodyInserters.fromFormData(formData))
                 .retrieve()
                 .bodyToMono(LoginDto.class)
                 .block();
 
-        JwtToken jwtToken = jwtService.decodeKakaoToken(loginDto.getIdToken());
+        String getUserInfoUri = "https://kapi.kakao.com/v2/user/me";
 
-        String userId = userService.findUserIdByEmail(jwtToken.getEmail());
+        webClient = WebClient.create();
 
-        if(userId.isEmpty()) {
-            userId = userService.save(UserInputDto.builder()
-                    .userEmail(jwtToken.getEmail())
-                    .userNick(jwtToken.getNickname())
+        System.out.println(loginDto.getAccess_token());
+
+        KakaoProfileDto kakaoProfileDto = webClient.post()
+                .uri(getUserInfoUri)
+                .headers(headers -> headers.setBearerAuth(loginDto.getAccess_token()))
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .retrieve()
+                .bodyToMono(KakaoProfileDto.class)
+                .block();
+
+        String email = kakaoProfileDto.getKakao_account().getEmail();
+        String nickname = kakaoProfileDto.getKakao_account().getProfile().getNickname();
+
+        Optional<String> userId = userService.findUserIdByEmail(email);
+
+        String newUserId;
+
+        if (userId.isEmpty()) {
+            newUserId = userService.save(UserInputDto.builder()
+                    .userEmail(email)
+                    .userNick(nickname)
                     .build());
+        } else {
+            newUserId = String.valueOf(userId);
         }
 
-        String accessToken = jwtService.createAccessToken(userId);
+        String accessToken = jwtService.createAccessToken(newUserId);
         String refreshToken = jwtService.createRefreshToken();
 
-        redisService.setValue(userId, loginDto.getRefresh_token(), REFRESH_TIME);
+        redisService.setValue(newUserId, loginDto.getRefresh_token(), REFRESH_TIME);
 
         return TokenResponseDto.builder().accessToken(accessToken).refreshToken(refreshToken).build();
     }
