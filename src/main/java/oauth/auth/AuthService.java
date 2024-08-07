@@ -75,8 +75,6 @@ public class AuthService {
 
         webClient = WebClient.create();
 
-        System.out.println(loginDto.getAccess_token());
-
         KakaoProfileDto kakaoProfileDto = webClient.post()
                 .uri(getUserInfoUri)
                 .headers(headers -> headers.setBearerAuth(loginDto.getAccess_token()))
