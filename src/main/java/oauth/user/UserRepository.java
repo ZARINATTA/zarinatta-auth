@@ -11,14 +11,14 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
     @Transactional
-    @Query(value = "UPDATE users SET " +
+    @Query(value = "UPDATE USERS SET " +
             "USER_DEVICE_TOKEN = CASE WHEN :token IS NOT NULL THEN :token ELSE token END, " +
             "USER_PHONE = CASE WHEN :phone IS NOT NULL THEN :phone ELSE email END " +
-            "WHERE id = :id", nativeQuery = true)
+            "WHERE USER_ID = :id", nativeQuery = true)
     void update(@Param("id") String id, @Param("token") String token, @Param("phone") String phone);
 
-    @Query(value = "select USER_ID from USER where USER_EMAIL = :email", nativeQuery = true)
-    String findUserIdByEmail(@Param("email") String email);
+    @Query(value = "select USER_ID from USERS where USER_EMAIL = :email", nativeQuery = true)
+    Optional<String> findUserIdByEmail(@Param("email") String email);
 }
 
 

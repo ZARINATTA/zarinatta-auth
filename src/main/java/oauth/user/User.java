@@ -6,13 +6,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import jakarta.annotation.Nullable;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 @Entity
 @Table(name="USERS")
 @Getter
 @Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class User {
 
     @Id
