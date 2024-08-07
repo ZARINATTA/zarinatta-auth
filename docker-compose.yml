@@ -15,7 +15,7 @@ services:
       - "6379:6379"
 
   app:
-    image: "${DOCKERHUB_USERNAME}/${DOCKERHUB_IMAGE_NAME}"
+    image: "${DOCKERHUB_USERNAME}/${DOCKERHUB_IMAGE_NAME}:latest"
     ports:
       - "8080:8080"
     depends_on:
