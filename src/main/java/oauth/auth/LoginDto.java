@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 public class LoginDto {
     String token_type;
-    String idToken;
+    String id_token;
     String access_token;
     int expires_in;
     String refresh_token;
