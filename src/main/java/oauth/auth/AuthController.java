@@ -1,5 +1,7 @@
 package oauth.auth;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
@@ -37,6 +39,23 @@ public class AuthController {
     }
 
 
+    @PostMapping("/oauth/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        Cookie[] cookie = request.getCookies();
+        for(Cookie c : cookie) {
+            authService.logout(c.getAttribute("skt"));
+        }
+
+        ResponseCookie deletedCookie = ResponseCookie.from("skt", "")
+                .maxAge(0) // 쿠키 만료 시간 설정
+                .path("/") // 쿠키의 경로 설정
+                .httpOnly(true) // 보안 설정
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        return ResponseEntity.noContent().build();
+    }
 
     @GetMapping("/test")
     public ResponseEntity<TestDto> test() {

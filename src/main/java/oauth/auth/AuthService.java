@@ -107,6 +107,12 @@ public class AuthService {
         return TokenResponseDto.builder().accessToken(accessToken).refreshToken(refreshToken).build();
     }
 
+    public void logout(String accessToken) throws Exception {
+        String userId = jwtService.decodeAccessToken(accessToken);
+
+        redisService.deleteValue(userId);
+    }
+
     private static Mono<String> handleResponse(ClientResponse response) {
         if (response.statusCode().is3xxRedirection()) {
             // 응답이 리다이렉션일 경우 Location 헤더를 반환합니다.
