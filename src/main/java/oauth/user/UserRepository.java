@@ -14,10 +14,10 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Query(value = "UPDATE USERS SET " +
             "USER_DEVICE_TOKEN = CASE WHEN :token IS NOT NULL THEN :token ELSE token END, " +
             "USER_PHONE = CASE WHEN :phone IS NOT NULL THEN :phone ELSE email END " +
-            "WHERE USER_ID = :id")
+            "WHERE USER_ID = :id", nativeQuery = true)
     void update(@Param("id") String id, @Param("token") String token, @Param("phone") String phone);
 
-    @Query(value = "select USER_ID from USERS where USER_EMAIL = :email")
+    @Query(value = "select USER_ID from USERS where USER_EMAIL = :email", nativeQuery = true)
     Optional<String> findUserIdByEmail(@Param("email") String email);
 }
 

@@ -9,6 +9,7 @@ import jakarta.annotation.Nullable;
 import lombok.*;
 
 @Entity(name="USERS")
+@Table(name="USERS")
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
