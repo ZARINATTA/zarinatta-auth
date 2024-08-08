@@ -58,6 +58,8 @@ jobs:
           key: ${{ secrets.SERVER_KEY }}
           port: ${{ secrets.SERVER_PORT }}
           script: |
+            sudo chmod 666 /var/run/docker.sock
+            sudo chmod +x /usr/local/bin/docker-compose
             cd /home/${{ secrets.SERVER_USERNAME }}
             sudo docker-compose down
             sudo docker image rm ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:latest || true
