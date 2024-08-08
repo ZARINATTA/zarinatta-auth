@@ -8,8 +8,7 @@ import jakarta.persistence.Table;
 import jakarta.annotation.Nullable;
 import lombok.*;
 
-@Entity
-@Table(name="USERS")
+@Entity(name="USERS")
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
