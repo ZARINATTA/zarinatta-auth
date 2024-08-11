@@ -68,9 +68,14 @@ public class JwtService {
 
             return true;
         } catch (SecurityException | MalformedJwtException e) {
-            throw new Exception("NOT_EXIST_REFRESH_TOKEN");
+            log.error("NOT_EXIST_REFRESH_TOKEN");
+            return false;
         } catch (ExpiredJwtException e) {
-            throw new Exception("EXPIRED_TOKEN");
+            log.error("EXPIRED_TOKEN");
+            return false;
+        } catch (Exception e) {
+            log.error("INTERNAL_SERVER_ERROR");
+            return false;
         }
     }
 
