@@ -54,9 +54,11 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           script: |
             sudo chmod 666 /var/run/docker.sock
+            sudo chmod +x /usr/local/bin/docker-compose
             cd /home/${{ secrets.SERVER_USERNAME }}
-            sudo docker-compose down
+            sudo docker-compose stop
+            sudo docker-compose rm -f
             sudo docker-compose pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:latest
-            docker-compose up -d --build
+            docker-compose up -d
             sudo docker system prune -f
             echo "끝"
