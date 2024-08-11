@@ -1,6 +1,7 @@
 package oauth.user;
 
 import lombok.RequiredArgsConstructor;
+import oauth.auth.JwtService;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -9,6 +10,8 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
+    private final JwtService jwtService;
 
     private final UserRepository userRepository;
 
@@ -22,8 +25,10 @@ public class UserService {
         return userRepository.save(user).getId();
     }
 
-    public void update(String id, UserUpdateDto userUpdateDto) {
-        userRepository.update(id, userUpdateDto.getUserDeviceToken(), userUpdateDto.getUserPhone());
+    public void update(String accessToken, UserUpdateDto userUpdateDto) throws Exception {
+        String userId = jwtService.decodeAccessToken(accessToken);
+
+        userRepository.update(userId, userUpdateDto.getUserDeviceToken(), userUpdateDto.getUserPhone());
     }
 
     public String findUserIdByEmail(String email) {

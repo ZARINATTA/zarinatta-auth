@@ -1,9 +1,12 @@
 package oauth.user;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -22,9 +25,13 @@ public class UserController {
     }
 
     @PostMapping("/users/update")
-    public ResponseEntity<Void> savePhoneNumber(String userId, UserUpdateDto userUpdateDto) {
-        userService.update(userId, userUpdateDto);
+    public ResponseEntity<Void> savePhoneNumber(HttpServletRequest request, @RequestBody UserUpdateDto userUpdateDto) throws Exception {
+        Cookie[] cookies = request.getCookies();
 
-        return new ResponseEntity<Void>(HttpStatus.CREATED);
+        String accessToken = cookies[0].getValue();
+
+        userService.update(accessToken, userUpdateDto);
+
+        return new ResponseEntity<Void>(HttpStatus.OK);
     }
 }
