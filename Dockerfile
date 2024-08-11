@@ -1,4 +1,4 @@
-FROM openjdk:18-jre-alpine
+FROM openjdk:18-alpine
 
 ENV TZ=Asia/Seoul
 
