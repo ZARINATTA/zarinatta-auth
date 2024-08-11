@@ -18,7 +18,10 @@ public interface UserRepository extends JpaRepository<User, String> {
     void update(@Param("id") String id, @Param("token") String token, @Param("phone") String phone);
 
     @Query(value = "select USER_ID from USERS where USER_EMAIL = :email", nativeQuery = true)
-    Optional<String> findUserIdByEmail(@Param("email") String email);
+    String findUserIdByEmail(@Param("email") String email);
+
+    @Query(value = "select USER_EMAIL from USERS where USER_ID = :id", nativeQuery = true)
+    String findUserEmailById(@Param("id") String userId);
 }
 
 

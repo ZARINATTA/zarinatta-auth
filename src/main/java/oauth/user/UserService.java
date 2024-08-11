@@ -26,8 +26,12 @@ public class UserService {
         userRepository.update(id, userUpdateDto.getUserDeviceToken(), userUpdateDto.getUserPhone());
     }
 
-    public Optional<String> findUserIdByEmail(String email) {
+    public String findUserIdByEmail(String email) {
         return userRepository.findUserIdByEmail(email);
+    }
+
+    public String findUserEmailById(String userId) {
+        return userRepository.findUserEmailById(userId);
     }
 
 }
