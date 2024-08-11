@@ -38,7 +38,7 @@ public class AuthService {
 
     private final RedisService redisService;
 
-    public RedirectDto authorize() {
+    public RedirectDto redirect() {
         String requestUri = "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=" + CLIENT_ID + "&redirect_uri=" + REDIRECT_URI + "&nonce=" + nonce;
 
         WebClient webClient = WebClient.create();
@@ -52,7 +52,7 @@ public class AuthService {
     }
 
     @Transactional
-    public TokenResponseDto login(String code) throws Exception {
+    public TokenResponseDto signup(String code) throws Exception {
         String getTokenUri = "https://kauth.kakao.com/oauth/token";
 
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
@@ -86,25 +86,68 @@ public class AuthService {
         String email = kakaoProfileDto.getKakao_account().getEmail();
         String nickname = kakaoProfileDto.getKakao_account().getProfile().getNickname();
 
-        Optional<String> userId = userService.findUserIdByEmail(email);
+        String userId = userService.findUserIdByEmail(email);
 
-        String newUserId;
-
-        if (userId.isEmpty()) {
-            newUserId = userService.save(UserInputDto.builder()
-                    .userEmail(email)
-                    .userNick(nickname)
-                    .build());
-        } else {
-            newUserId = String.valueOf(userId);
+        if (userId != null) {
+            throw new Exception("Already Exist Member.");
         }
+
+        String newUserId = userService.save(UserInputDto.builder()
+                .userEmail(email)
+                .userNick(nickname)
+                .build());
 
         String accessToken = jwtService.createAccessToken(newUserId);
         String refreshToken = jwtService.createRefreshToken();
 
-        redisService.setValue(newUserId, loginDto.getRefresh_token(), REFRESH_TIME);
+        redisService.setValue(refreshToken, newUserId, REFRESH_TIME);
 
         return TokenResponseDto.builder().accessToken(accessToken).refreshToken(refreshToken).build();
+    }
+
+    // TODO: 있는 User인지만 확인 -> 새로운 refresh, accessToken 발급
+    public TokenResponseDto login(String accessToken, String refreshToken) throws Exception {
+        if(!jwtService.isValidToken(accessToken)) {
+            if(redisService.getValue(refreshToken).isEmpty()) {
+                throw new Exception("Invalid Request.");
+            }
+        }
+
+        String userId = jwtService.decodeAccessToken(accessToken);
+
+        if(userId == null) {
+            throw new Exception("Not exist Member.");
+        }
+
+        String newAccessToken = jwtService.createAccessToken(userId);
+        String newRefreshToken = jwtService.createRefreshToken();
+
+        redisService.deleteValue(refreshToken);
+        redisService.setValue(newRefreshToken, userId, REFRESH_TIME);
+
+        return TokenResponseDto.builder().accessToken(newAccessToken).refreshToken(newRefreshToken).build();
+    }
+
+    public TokenResponseDto authorize(String accessToken, String refreshToken) throws Exception {
+//        if(!jwtService.isValidToken(refreshToken)) {
+//            this.logout(accessToken);
+//            throw new Exception("Refresh Token is valid. Please re-login please.");
+//        }
+
+        String userId = redisService.getValue(refreshToken);
+
+        if(userId == null) {
+            this.logout(accessToken);
+            throw new Exception("Refresh Token is expired. Please re-login please.");
+        }
+
+        String newAccessToken = jwtService.createAccessToken(userId);
+        String newRefreshToken = jwtService.createRefreshToken();
+
+        redisService.deleteValue(refreshToken);
+        redisService.setValue(newRefreshToken, userId, REFRESH_TIME);
+
+        return TokenResponseDto.builder().accessToken(newAccessToken).refreshToken(newRefreshToken).build();
     }
 
     public void logout(String accessToken) throws Exception {
