@@ -49,20 +49,21 @@ public class JwtService {
                 .compact();
     }
 
-    public String decodeAccessToken(String token) throws Exception{
-        try {
+    public String decodeAccessToken(String token) {
+        //TODO: validation 여기서 안할 때 문제 없을까 생각해봐야함
+//        try {
             Claims claims = Jwts.parser()
                     .setSigningKey(secretKey)
                     .parseClaimsJws(token)
                     .getBody();
 
-            return claims.getSubject();
-        } catch (ExpiredJwtException e) {
-            throw e;
-        }
+            return claims.getSubject() != null ? claims.getSubject() :  null;
+//        } catch (ExpiredJwtException e) {
+//            throw e;
+//        }
     }
 
-    public boolean isValidToken(String token) throws Exception {
+    public boolean isValidToken(String token) {
         try {
             Jwts.parserBuilder().build().parseClaimsJws(token);
 
