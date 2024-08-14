@@ -13,12 +13,15 @@ import lombok.RequiredArgsConstructor;
 import oauth.auth.JwtService;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @RequiredArgsConstructor
 public class TokenValidationFilter implements Filter {
 
     private final JwtService jwtService;
+    private List<String> excludeUrls = new ArrayList<>();
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -61,5 +64,9 @@ public class TokenValidationFilter implements Filter {
     @Override
     public void destroy() {
         // 필터 종료 작업이 필요하면 여기에 작성
+    }
+
+    public void setExcludeUrls(List<String> excludeUrls) {
+        this.excludeUrls = excludeUrls;
     }
 }

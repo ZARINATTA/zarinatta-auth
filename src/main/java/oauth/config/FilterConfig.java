@@ -5,14 +5,19 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Arrays;
+
 @Configuration
 public class FilterConfig {
 
     @Bean
     public FilterRegistrationBean<TokenValidationFilter> accessTokenValidationFilter(JwtService jwtService) {
         FilterRegistrationBean<TokenValidationFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setFilter(new TokenValidationFilter(jwtService));
-        registrationBean.addUrlPatterns("/users/*"); // 필터를 적용할 URL 패턴 설정
+        TokenValidationFilter filter = new TokenValidationFilter(jwtService);
+
+        registrationBean.setFilter(filter);
+        filter.setExcludeUrls(Arrays.asList("/auth/*"));
+
         return registrationBean;
     }
 }
