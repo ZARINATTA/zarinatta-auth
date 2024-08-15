@@ -1,10 +1,10 @@
 ### ⭐ Kakao Oauth 구현
+### ⭐ User 정보 저장
+### ⭐ Docker Compose를 활용한 다중 컨테이너 실행
 
-### ⭐ Redis pub/sub 구현
-- [Redis pub/sub 구조 구현](https://lucas-owner.tistory.com/68)
-- [정리 노션 (작성중)](https://www.notion.so/Redis-pub-sub-238edab2312a4916a45fa2e7a8f3b1aa)
+### 그 외의 fcm 구현 코드 
 
-### API 명세 (임시)
+### ✍️ API 명세 (임시)
 ```
 - GET '/auth/redirect' (singup api 동작 전 필수로 실행되어야 함)
 
