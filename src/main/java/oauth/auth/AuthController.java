@@ -83,7 +83,7 @@ public class AuthController {
     }
 
     @PostMapping("/auth/logout")
-    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
         Cookie[] cookie = request.getCookies();
         for(Cookie c : cookie) {
             authService.logout(c.getValue());

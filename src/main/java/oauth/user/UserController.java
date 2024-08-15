@@ -3,6 +3,7 @@ package oauth.user;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import oauth.exception.ZarinattaException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +26,7 @@ public class UserController {
     }
 
     @PostMapping("/users/update")
-    public ResponseEntity<Void> savePhoneNumber(HttpServletRequest request, @RequestBody UserUpdateDto userUpdateDto) throws Exception {
+    public ResponseEntity<Void> savePhoneNumber(HttpServletRequest request, @RequestBody UserUpdateDto userUpdateDto) throws ZarinattaException {
         Cookie[] cookies = request.getCookies();
 
         String accessToken = cookies[0].getValue();

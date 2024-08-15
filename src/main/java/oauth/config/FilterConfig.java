@@ -1,6 +1,7 @@
 package oauth.config;
 
 import oauth.auth.JwtService;
+import oauth.filter.TokenValidationFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

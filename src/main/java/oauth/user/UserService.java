@@ -2,6 +2,8 @@ package oauth.user;
 
 import lombok.RequiredArgsConstructor;
 import oauth.auth.JwtService;
+import oauth.exception.ZarinattaException;
+import oauth.exception.ZarinattaExceptionType;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -25,8 +27,12 @@ public class UserService {
         return userRepository.save(user).getId();
     }
 
-    public void update(String accessToken, UserUpdateDto userUpdateDto) throws Exception {
+    public void update(String accessToken, UserUpdateDto userUpdateDto) throws ZarinattaException {
         String userId = jwtService.decodeAccessToken(accessToken);
+
+        if(userId == null) {
+            throw new ZarinattaException(ZarinattaExceptionType.INVALID_TOKEN_ERROR);
+        }
 
         userRepository.update(userId, userUpdateDto.getUserDeviceToken(), userUpdateDto.getUserPhone());
     }

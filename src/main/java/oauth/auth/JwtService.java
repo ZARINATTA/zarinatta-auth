@@ -3,6 +3,8 @@ package oauth.auth;
 import io.jsonwebtoken.*;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import oauth.exception.ZarinattaException;
+import oauth.exception.ZarinattaExceptionType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -49,18 +51,18 @@ public class JwtService {
                 .compact();
     }
 
-    public String decodeAccessToken(String token) {
+    public String decodeAccessToken(String token) throws ZarinattaException {
         //TODO: validation 여기서 안할 때 문제 없을까 생각해봐야함
-//        try {
+        try {
             Claims claims = Jwts.parser()
                     .setSigningKey(secretKey)
                     .parseClaimsJws(token)
                     .getBody();
 
             return claims.getSubject() != null ? claims.getSubject() :  null;
-//        } catch (ExpiredJwtException e) {
-//            throw e;
-//        }
+        } catch (ExpiredJwtException e) {
+            throw new ZarinattaException(ZarinattaExceptionType.EXPIRED_TOKEN_ERROR);
+        }
     }
 
     public boolean isValidToken(String token) {

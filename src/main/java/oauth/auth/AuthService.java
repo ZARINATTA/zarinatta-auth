@@ -3,6 +3,8 @@ package oauth.auth;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import oauth.config.RedisService;
+import oauth.exception.ZarinattaException;
+import oauth.exception.ZarinattaExceptionType;
 import oauth.user.UserInputDto;
 import oauth.user.UserService;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,7 +54,7 @@ public class AuthService {
     }
 
     @Transactional
-    public TokenResponseDto signup(String code) throws Exception {
+    public TokenResponseDto signup(String code) throws ZarinattaException {
         String getTokenUri = "https://kauth.kakao.com/oauth/token";
 
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
@@ -68,6 +70,11 @@ public class AuthService {
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(BodyInserters.fromFormData(formData))
                 .retrieve()
+                .onStatus(
+                        status -> status.is4xxClientError() || status.is5xxServerError(),
+                        clientResponse -> clientResponse.bodyToMono(String.class)
+                                .flatMap(errorBody -> Mono.error(new ZarinattaException(ZarinattaExceptionType.KAKAO_SERVER_ERROR)))
+                )
                 .bodyToMono(LoginDto.class)
                 .block();
 
@@ -80,6 +87,11 @@ public class AuthService {
                 .headers(headers -> headers.setBearerAuth(loginDto.getAccess_token()))
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .retrieve()
+                .onStatus(
+                        status -> status.is4xxClientError() || status.is5xxServerError(),
+                        clientResponse -> clientResponse.bodyToMono(String.class)
+                                .flatMap(errorBody -> Mono.error(new ZarinattaException(ZarinattaExceptionType.KAKAO_SERVER_ERROR)))
+                )
                 .bodyToMono(KakaoProfileDto.class)
                 .block();
 
@@ -89,7 +101,7 @@ public class AuthService {
         String userId = userService.findUserIdByEmail(email);
 
         if (userId != null) {
-            throw new Exception("Already Exist Member.");
+            throw new ZarinattaException(ZarinattaExceptionType.INVALID_TOKEN_ERROR);
         }
 
         String newUserId = userService.save(UserInputDto.builder()
@@ -106,17 +118,17 @@ public class AuthService {
     }
 
     // TODO: 있는 User인지만 확인 -> 새로운 refresh, accessToken 발급
-    public TokenResponseDto login(String accessToken, String refreshToken) throws Exception {
+    public TokenResponseDto login(String accessToken, String refreshToken) throws ZarinattaException {
         if(!jwtService.isValidToken(accessToken)) {
             if(redisService.getValue(refreshToken).isEmpty()) {
-                throw new Exception("Invalid Request.");
+                throw new ZarinattaException(ZarinattaExceptionType.INVALID_TOKEN_ERROR);
             }
         }
 
         String userId = jwtService.decodeAccessToken(accessToken);
 
         if(userId == null) {
-            throw new Exception("Not exist Member.");
+            throw new ZarinattaException(ZarinattaExceptionType.INVALID_TOKEN_ERROR);
         }
 
         String newAccessToken = jwtService.createAccessToken(userId);
@@ -128,17 +140,12 @@ public class AuthService {
         return TokenResponseDto.builder().accessToken(newAccessToken).refreshToken(newRefreshToken).build();
     }
 
-    public TokenResponseDto authorize(String accessToken, String refreshToken) throws Exception {
-//        if(!jwtService.isValidToken(refreshToken)) {
-//            this.logout(accessToken);
-//            throw new Exception("Refresh Token is valid. Please re-login please.");
-//        }
-
+    public TokenResponseDto authorize(String accessToken, String refreshToken) throws ZarinattaException {
         String userId = redisService.getValue(refreshToken);
 
         if(userId == null) {
             this.logout(accessToken);
-            throw new Exception("Refresh Token is expired. Please re-login please.");
+            throw new ZarinattaException(ZarinattaExceptionType.EXPIRED_TOKEN_ERROR);
         }
 
         String newAccessToken = jwtService.createAccessToken(userId);
@@ -150,19 +157,22 @@ public class AuthService {
         return TokenResponseDto.builder().accessToken(newAccessToken).refreshToken(newRefreshToken).build();
     }
 
-    public void logout(String accessToken) throws Exception {
+    public void logout(String accessToken) throws ZarinattaException {
         String userId = jwtService.decodeAccessToken(accessToken);
+
+        if(userId == null) {
+            throw new ZarinattaException(ZarinattaExceptionType.INVALID_TOKEN_ERROR);
+        }
 
         redisService.deleteValue(userId);
     }
 
-    private static Mono<String> handleResponse(ClientResponse response) {
+    private static Mono<String> handleResponse(ClientResponse response) throws ZarinattaException {
         if (response.statusCode().is3xxRedirection()) {
             // 응답이 리다이렉션일 경우 Location 헤더를 반환합니다.
             return Mono.justOrEmpty(response.headers().header(HttpHeaders.LOCATION).stream().findFirst());
-        } else {
-            // 응답이 리다이렉션이 아닐 경우 빈 Mono를 반환합니다.
-            return Mono.empty();
         }
+
+        throw new ZarinattaException(ZarinattaExceptionType.AUTH_SERVER_ERROR);
     }
 }
