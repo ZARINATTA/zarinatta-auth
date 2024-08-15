@@ -1,6 +1,7 @@
 package server.oauth.user;
 
 import lombok.RequiredArgsConstructor;
+import server.entity.User;
 import server.oauth.auth.JwtService;
 import server.oauth.exception.ZarinattaException;
 import server.oauth.exception.ZarinattaExceptionType;
