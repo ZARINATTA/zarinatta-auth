@@ -37,6 +37,10 @@ public class UserService {
         userRepository.update(userId, userUpdateDto.getUserDeviceToken(), userUpdateDto.getUserPhone());
     }
 
+    public void delete(String userId) {
+        userRepository.deleteById(userId);
+    }
+
     public String findUserIdByEmail(String email) {
         return userRepository.findUserIdByEmail(email);
     }

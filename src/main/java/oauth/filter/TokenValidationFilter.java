@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import oauth.auth.JwtService;
+import oauth.exception.ZarinattaException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ public class TokenValidationFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ZarinattaException, IOException {
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
@@ -52,18 +53,15 @@ public class TokenValidationFilter implements Filter {
 
             // 유효한 토큰인 경우 요청을 계속 처리
             if (userId != null) {
-                //TODO: destory에 뭘 넣어야 하는거지?
+                // TODO: 이렇게 userId를 request에 넣어줘도 되는건지 좀 생각해봐야할듯
+                httpRequest.setAttribute("accessToken", accessToken);
+                httpRequest.setAttribute("userId", userId);
                 return;
             }
         }
 
         // 유효하지 않은 토큰인 경우 401 에러 반환
         httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid access token");
-    }
-
-    @Override
-    public void destroy() {
-        // 필터 종료 작업이 필요하면 여기에 작성
     }
 
     public void setExcludeUrls(List<String> excludeUrls) {

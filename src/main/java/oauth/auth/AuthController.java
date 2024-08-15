@@ -40,9 +40,7 @@ public class AuthController {
 
     @PostMapping("/auth/login")
     public ResponseEntity<Map<String, String>> login(HttpServletRequest request, @RequestBody Map<String, String> map) throws Exception {
-        Cookie[] cookies = request.getCookies();
-
-        String accessToken = cookies[0].getValue();
+        String accessToken = (String) request.getAttribute("accessToken");
         String refreshToken = map.get("refreshToken");
 
         TokenResponseDto tokenResponseDto = authService.login(accessToken, refreshToken);
@@ -62,9 +60,7 @@ public class AuthController {
 
     @PostMapping("/auth/authorize")
     public ResponseEntity<Map<String, String>> authorize(HttpServletRequest request, @RequestBody Map<String, String> map) throws Exception {
-        Cookie[] cookies = request.getCookies();
-
-        String accessToken = cookies[0].getValue();
+        String accessToken = (String) request.getAttribute("accessToken");
         String refreshToken = map.get("refreshToken");
 
         TokenResponseDto tokenResponseDto = authService.authorize(accessToken, refreshToken);
@@ -84,10 +80,9 @@ public class AuthController {
 
     @PostMapping("/auth/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
-        Cookie[] cookie = request.getCookies();
-        for(Cookie c : cookie) {
-            authService.logout(c.getValue());
-        }
+        String accessToken = (String) request.getAttribute("accessToken");
+
+        authService.logout(accessToken);
 
         ResponseCookie deletedCookie = ResponseCookie.from("skt", "")
                 .maxAge(0) // 쿠키 만료 시간 설정
@@ -95,7 +90,7 @@ public class AuthController {
                 .httpOnly(true) // 보안 설정
                 .build();
 
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, deletedCookie.toString());
 
         return ResponseEntity.noContent().build();
     }

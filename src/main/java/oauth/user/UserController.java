@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import oauth.exception.ZarinattaException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,11 +26,18 @@ public class UserController {
         return ResponseEntity.ok(Map.of("userId", userId));
     }
 
+    @DeleteMapping("/users")
+    public ResponseEntity<Void> deleteUser(HttpServletRequest request) throws ZarinattaException {
+        String userId = (String) request.getAttribute("userId");
+
+        userService.delete(userId);
+
+        return new ResponseEntity<Void>(HttpStatus.OK);
+    }
+
     @PostMapping("/users/update")
     public ResponseEntity<Void> savePhoneNumber(HttpServletRequest request, @RequestBody UserUpdateDto userUpdateDto) throws ZarinattaException {
-        Cookie[] cookies = request.getCookies();
-
-        String accessToken = cookies[0].getValue();
+        String accessToken = (String) request.getAttribute("accessToken");
 
         userService.update(accessToken, userUpdateDto);
 
