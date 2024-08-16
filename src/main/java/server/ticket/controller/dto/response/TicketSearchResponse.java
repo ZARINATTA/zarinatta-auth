@@ -11,5 +11,4 @@ public class TicketSearchResponse {
     private StationCode departStation;
     private StationCode arriveStation;
     private String price;
-    private Boolean isBookMarked;
 }
