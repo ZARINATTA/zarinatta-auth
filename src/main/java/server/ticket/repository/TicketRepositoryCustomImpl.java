@@ -33,7 +33,7 @@ public class TicketRepositoryCustomImpl implements TicketRepositoryCustom {
                         ticket.departTime.goe(ticketSearchRequest.getDepartTime()),
                         ticketTypeEq(ticketSearchRequest.getTrainType()))
                 .orderBy(ticket.departTime.asc())
-                .offset(pageable.getPageNumber())
+                .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
