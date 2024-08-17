@@ -15,7 +15,7 @@ public class TicketSearchRequest {
     @NotBlank
     private StationCode arriveStation;
     @FutureOrPresent(message = "현재 날짜 이후 여야 합니다.")
-    private LocalDate departDate;
-    private LocalTime departTime;
+    private String departDate;
+    private String departTime;
     private String trainType;
 }
