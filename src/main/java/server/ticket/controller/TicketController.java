@@ -23,12 +23,6 @@ public class TicketController {
     @GetMapping("/search")
     @ResponseStatus(HttpStatus.OK)
     public PageTicketResponse searchTicket(@Valid TicketSearchRequest ticketSearchRequest, Pageable pageable) {
-        Page<TicketSearchResponse> ticket = ticketService.getTicket(ticketSearchRequest, pageable);
-        return PageTicketResponse.builder()
-                .responseList(ticket.getContent())
-                .page(ticket.getNumber() + 1)
-                .totalDataCount(ticket.getTotalElements())
-                .totalPageCount(ticket.getTotalPages())
-                .build();
+        return ticketService.getTicket(ticketSearchRequest, pageable);
     }
 }

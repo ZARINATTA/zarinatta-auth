@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import server.entity.Ticket;
 import server.ticket.controller.dto.request.TicketSearchRequest;
+import server.ticket.controller.dto.response.PageTicketResponse;
 import server.ticket.controller.dto.response.TicketSearchResponse;
 import server.ticket.repository.TicketRepository;
 
@@ -23,11 +24,16 @@ public class TicketService {
 
     private final TicketRepository ticketRepository;
 
-    public Page<TicketSearchResponse> getTicket(TicketSearchRequest searchRequest, Pageable pageable) {
+    public PageTicketResponse getTicket(TicketSearchRequest searchRequest, Pageable pageable) {
         Page<Ticket> ticketBySearchDTO = ticketRepository.findTicketBySearchDTO(searchRequest, pageable);
         List<TicketSearchResponse> content = ticketBySearchDTO.getContent().stream()
                 .map(TicketSearchResponse::fromEntity)
                 .collect(Collectors.toList());
-        return new PageImpl<>(content, pageable, ticketBySearchDTO.getTotalElements());
+        return PageTicketResponse.builder()
+                .responseList(content)
+                .page(ticketBySearchDTO.getNumber() + 1)
+                .totalDataCount(ticketBySearchDTO.getTotalElements())
+                .totalPageCount(ticketBySearchDTO.getTotalPages())
+                .build();
     }
 }
