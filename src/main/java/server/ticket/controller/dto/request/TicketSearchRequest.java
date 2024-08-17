@@ -2,6 +2,7 @@ package server.ticket.controller.dto.request;
 
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import server.enums.StationCode;
 
@@ -10,11 +11,10 @@ import java.time.LocalTime;
 
 @Data
 public class TicketSearchRequest {
-    @NotBlank
+    @NotNull
     private StationCode departStation;
-    @NotBlank
+    @NotNull
     private StationCode arriveStation;
-    @FutureOrPresent(message = "현재 날짜 이후 여야 합니다.")
     private String departDate;
     private String departTime;
     private String trainType;
