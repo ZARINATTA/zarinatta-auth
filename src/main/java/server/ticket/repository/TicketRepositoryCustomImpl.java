@@ -40,6 +40,7 @@ public class TicketRepositoryCustomImpl implements TicketRepositoryCustom {
         return new PageImpl<>(tickets, pageable, countAll(ticketSearchRequest));
     }
 
+    @Override
     public Long countAll(TicketSearchRequest ticketSearchRequest) {
         Long count = queryFactory
                 .select(ticket.count())
