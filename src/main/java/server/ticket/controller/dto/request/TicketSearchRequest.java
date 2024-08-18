@@ -1,16 +1,13 @@
 package server.ticket.controller.dto.request;
 
-import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import server.enums.StationCode;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-
-@Data
+@Getter
+@NoArgsConstructor
 public class TicketSearchRequest {
     @NotNull
     private StationCode departStation;
