@@ -1,10 +1,14 @@
 package server.oauth.auth;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Builder
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class LoginDto {
     String token_type;
     String id_token;

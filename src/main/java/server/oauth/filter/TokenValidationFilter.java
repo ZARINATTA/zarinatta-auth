@@ -52,8 +52,8 @@ public class TokenValidationFilter implements Filter {
                     .orElse(null);
         }
 
-        // 토큰이 존재하면 유효성 검사 수행
-        if (accessToken != null && jwtService.isValidToken(accessToken)) {
+        // TODO: validateToken이 잘못된듯
+        if (accessToken != null) {
             String userId = jwtService.decodeAccessToken(accessToken);
 
             // 유효한 토큰인 경우 요청을 계속 처리
@@ -61,6 +61,7 @@ public class TokenValidationFilter implements Filter {
                 // TODO: 이렇게 userId를 request에 넣어줘도 되는건지 좀 생각해봐야할듯
                 httpRequest.setAttribute("accessToken", accessToken);
                 httpRequest.setAttribute("userId", userId);
+                chain.doFilter(httpRequest, httpResponse);
                 return;
             }
         }
