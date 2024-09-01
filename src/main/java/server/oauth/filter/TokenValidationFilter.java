@@ -30,10 +30,15 @@ public class TokenValidationFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ZarinattaException, IOException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ZarinattaException, IOException, ServletException {
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+        if(excludeUrls.contains(httpRequest.getRequestURI())) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         // 쿠키에서 accessToken 가져오기
         Cookie[] cookies = httpRequest.getCookies();
@@ -47,8 +52,8 @@ public class TokenValidationFilter implements Filter {
                     .orElse(null);
         }
 
-        // 토큰이 존재하면 유효성 검사 수행
-        if (accessToken != null && jwtService.isValidToken(accessToken)) {
+        // TODO: validateToken이 잘못된듯
+        if (accessToken != null) {
             String userId = jwtService.decodeAccessToken(accessToken);
 
             // 유효한 토큰인 경우 요청을 계속 처리
@@ -56,6 +61,7 @@ public class TokenValidationFilter implements Filter {
                 // TODO: 이렇게 userId를 request에 넣어줘도 되는건지 좀 생각해봐야할듯
                 httpRequest.setAttribute("accessToken", accessToken);
                 httpRequest.setAttribute("userId", userId);
+                chain.doFilter(httpRequest, httpResponse);
                 return;
             }
         }

@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -14,13 +15,13 @@ public class AuthController {
     private final AuthService authService;
 
     @GetMapping("/auth/redirect")
-    public ResponseEntity<RedirectDto> redirect() {
-        return new ResponseEntity<>(authService.redirect(), HttpStatusCode.valueOf(302));
+    public ResponseEntity<RedirectDto> redirect() throws IOException, InterruptedException {
+        return new ResponseEntity<>(authService.redirect2(), HttpStatusCode.valueOf(302));
     }
 
     @GetMapping("/auth/signup")
     public ResponseEntity<Map<String, String>> signup(@RequestParam String code) throws Exception {
-        TokenResponseDto tokenResponseDto = authService.signup(code);
+        TokenResponseDto tokenResponseDto = authService.signup2(code);
 
         ResponseCookie accessTokenCookie = ResponseCookie.from("skt", tokenResponseDto.getAccessToken())
                 .path("/")

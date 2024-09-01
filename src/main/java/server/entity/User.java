@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import jakarta.annotation.Nullable;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity(name="USERS")
 @Table(name="USERS")
 @Getter
@@ -14,8 +17,7 @@ import lombok.*;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="USER_ID")
+    @Column(name="USER_ID", unique = true)
     private String id;
 
     @Column(name="USER_EMAIL")
@@ -31,4 +33,8 @@ public class User {
     @Column(name="USER_DEVICE_TOKEN")
     @Nullable
     private String userDeviceToken;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<BookMark> bookmarks = new ArrayList<>();
 }
