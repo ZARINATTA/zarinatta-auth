@@ -3,7 +3,7 @@ name: Server CD
 on:
   push:
     branches:
-      - test/#3
+      - develop
 
 jobs:
   build:
