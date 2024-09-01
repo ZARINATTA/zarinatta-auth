@@ -30,10 +30,15 @@ public class TokenValidationFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ZarinattaException, IOException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ZarinattaException, IOException, ServletException {
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+        if(excludeUrls.contains(httpRequest.getRequestURI())) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         // 쿠키에서 accessToken 가져오기
         Cookie[] cookies = httpRequest.getCookies();
